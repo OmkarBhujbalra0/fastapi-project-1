@@ -1,17 +1,19 @@
 # Lost and Found Portal
 
-This is an Lost and Found Portal API, here you can add, remove and watch all the lost and found items.
+Lost and Found Portal, a Rest API built using FastAPI and SQLALchemy, allows add and remove the lost and found items in the database.
 
 Current Features:
 
 - Display all the lost and found items
 - Search for an specific item
 - Add new lost or found item
+- Remove the lost or found item
+- Update the item in the database
 
 ## Tech Stack
 
 - FastAPI
-- SQLite
+- SQLAlchemy
 
 ## Setup
 
@@ -32,14 +34,17 @@ python -m venv .venv
 ```
 pip install -r requirements.txt
 ```
+4. Make an `.env` file and write all the confidential details like API_KEY or DATABASE_URL in it.
 
-4. Run the project 
+5. Make an .gitignore file and add the files and folders in it you don't want to push to Github.
+
+6. Run the project 
 
 ```
-uvicorn file_name:app --reload
+uvicorn main:app --reload
 ```
 
-5. Test the API
+7. Test the API
 
 Click on the link `http://localhost:8000`
 Then visit `http://localhost:8000/docs` to test the API.
