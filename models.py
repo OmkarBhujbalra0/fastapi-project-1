@@ -11,3 +11,9 @@ class ItemDB(Base):
     date_reported = Column(DATETIME,nullable=False)
     status = Column(String,nullable=False)
 
+class Users(Base):
+    __tablename__ = 'userstable'
+
+    id = Column(Integer,primary_key=True,autoincrement=True)
+    username = Column(String,unique=True,nullable=False)
+    hashed_password = Column(String,nullable=False)

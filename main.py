@@ -4,7 +4,9 @@ from pydantic import BaseModel,Field
 from sqlalchemy.orm import Session
 from database import get_db,engine,Base
 import models
-from models import ItemDB
+from models import ItemDB,Users
+from security import hashed_password,verify_password
+
 app = FastAPI()
 from typing import Literal
 
@@ -16,6 +18,10 @@ class Lost_Found(BaseModel):
     date: datetime = Field(default_factory=datetime.now)
     date_reported: datetime = Field(default_factory=datetime.now)
     status: Literal["lost","found"]
+
+class User(BaseModel):
+    username: str
+    password: str
 
 @app.get('/')
 def home():
@@ -68,3 +74,30 @@ def removes(item_id:int,db:Session = Depends(get_db)):
     db.delete(item_data)
     db.commit()
     return {"message":"Item removed successfully."}
+
+@app.post('/register')
+def registration(details:User,db:Session =Depends(get_db)):
+    existing_user = db.query(Users).filter(Users.username == details.username).first()
+
+    if existing_user:
+        raise HTTPException(status_code=409, detail="User already exists.")
+
+    hashed_pwd = hashed_password(details.password)
+    user_data = Users(username=details.username,hashed_password=hashed_pwd)
+    db.add(user_data)
+    db.commit()
+    db.refresh(user_data)
+    return {"message":"New User Registered Successfully.",
+            "user": {
+                "user_id":user_data.id,
+                "username":user_data.username
+            }}
+
+# @app.post('/login')
+# def login(details:User,db:Session = Depends(get_db)):
+#     check_user = db.query(Users).filter(Users.username == details.username).first()
+#     check_password = verify_password(details.password,Users.hashed_password)
+#     if not check_user and check_password:
+#         raise HTTPException(status_code=401,detail="Invalid Username or Password")
+
+#     return {"message":f"Welcome,{details.username}"}
