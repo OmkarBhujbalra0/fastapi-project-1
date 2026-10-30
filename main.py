@@ -93,11 +93,13 @@ def registration(details:User,db:Session =Depends(get_db)):
                 "username":user_data.username
             }}
 
-# @app.post('/login')
-# def login(details:User,db:Session = Depends(get_db)):
-#     check_user = db.query(Users).filter(Users.username == details.username).first()
-#     check_password = verify_password(details.password,Users.hashed_password)
-#     if not check_user and check_password:
-#         raise HTTPException(status_code=401,detail="Invalid Username or Password")
+@app.post('/login')
+def login(details:User,db:Session = Depends(get_db)):
+    check_user = db.query(Users).filter(Users.username == details.username).first()
+    if not check_user:
+        raise HTTPException(status_code=401,detail="Invalid Username or Password")
+    check_password = verify_password(details.password,check_user.hashed_password)
+    if not check_password:
+            raise HTTPException(status_code=401,detail="Invalid Username or Password")
 
-#     return {"message":f"Welcome,{details.username}"}
+    return {"message":f"Welcome,{details.username}"}
