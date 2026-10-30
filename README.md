@@ -9,11 +9,14 @@ Current Features:
 - Add new lost or found item
 - Remove the lost or found item
 - Update the item in the database
+- Registration of Users
+- Login Routes
 
 ## Tech Stack
 
 - FastAPI
 - SQLAlchemy
+- JWT
 
 ## Setup
 

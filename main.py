@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from database import get_db,engine,Base
 import models
 from models import ItemDB,Users
-from security import hashed_password,verify_password
+from security import hashed_password,verify_password,create_token
 
 app = FastAPI()
 from typing import Literal
@@ -102,4 +102,5 @@ def login(details:User,db:Session = Depends(get_db)):
     if not check_password:
             raise HTTPException(status_code=401,detail="Invalid Username or Password")
 
-    return {"message":f"Welcome,{details.username}"}
+    token = create_token(check_user.username)
+    return {"access_token":token,"token_type":"bearer"}
