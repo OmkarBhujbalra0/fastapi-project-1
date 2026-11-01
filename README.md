@@ -10,7 +10,7 @@ Current Features:
 - Remove the lost or found item
 - Update the item in the database
 - Registration of Users
-- Login Routes
+- Login and Secure Routes
 
 ## Tech Stack
 

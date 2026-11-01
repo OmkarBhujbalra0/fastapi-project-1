@@ -38,10 +38,14 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(bearer_
         raise HTTPException(status_code=401,detail="Invalid Token")
     return user
 
-@app.get('/profile')
+@app.get('/me')
 def homepage(current_user: User = Depends(get_current_user)):
     return {"message":f"Welcome {current_user.username}"}
 
+@app.get('/me/items')
+def my_items(current_user: User = Depends(get_current_user),db: Session = Depends(get_db)):
+    items = db.query(ItemDB).filter(ItemDB.owner_id == current_user.id).all()
+    return items
 
 @app.get('/')
 def home():
@@ -60,20 +64,24 @@ def search(item_name:str,db:Session = Depends(get_db)):
     if not item_data:
         raise HTTPException(status_code=404,detail="Item not found in database.")
     return item_data
+
 @app.post('/items')
-def adds(item:Lost_Found,db:Session = Depends(get_db)):
-    item_data = ItemDB(item_name=item.item_name,location=item.location,date_lost_or_found=item.date,status=item.status,date_reported=item.date_reported)
+def adds(item:Lost_Found,db:Session = Depends(get_db),current_user: User = Depends(get_current_user)):
+    item_data = ItemDB(item_name=item.item_name,location=item.location,date_lost_or_found=item.date,status=item.status,date_reported=item.date_reported,owner_id=current_user.id)
     db.add(item_data)
     db.commit()
     db.refresh(item_data)
     return {"message":"Item Added Successfully."}
 
 @app.put('/items/{item_id}')
-def update(item_id:int,new_item:Lost_Found,db:Session = Depends(get_db)):
+def update(item_id:int,new_item:Lost_Found,db:Session = Depends(get_db),current_user: User = Depends(get_current_user)):
     item_data = db.query(ItemDB).filter(ItemDB.id == item_id).first()
 
     if not item_data:
         raise HTTPException(status_code=404,detail="Item not found in Database.")
+
+    if item_data.owner_id != current_user.id:
+        raise HTTPException(status_code=403,detail="Action not Allowed.")
 
     item_data.item_name = new_item.item_name
     item_data.date_lost_or_found = new_item.date
@@ -85,12 +93,15 @@ def update(item_id:int,new_item:Lost_Found,db:Session = Depends(get_db)):
     return {"message":"Item Updated Successfully","data":item_data}
 
 @app.delete('/items/{item_id}')
-def removes(item_id:int,db:Session = Depends(get_db)):
+def removes(item_id:int,db:Session = Depends(get_db),current_user: User = Depends(get_current_user)):
     item_data = db.query(ItemDB).filter(ItemDB.id == item_id).first()
 
     if not item_data:
         raise HTTPException(status_code=404, detail="Item not found in Database.")
 
+    if item_data.owner_id != current_user.id:
+        raise HTTPException(status_code=403,detail="Action not Allowed.")
+    
     db.delete(item_data)
     db.commit()
     return {"message":"Item removed successfully."}

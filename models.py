@@ -1,4 +1,4 @@
-from sqlalchemy import Column,String,Integer,DATETIME
+from sqlalchemy import Column,String,Integer,DATETIME,ForeignKey
 from database import Base
 
 class ItemDB(Base):
@@ -10,6 +10,7 @@ class ItemDB(Base):
     date_lost_or_found = Column(DATETIME,nullable=False)
     date_reported = Column(DATETIME,nullable=False)
     status = Column(String,nullable=False)
+    owner_id = Column(Integer,ForeignKey('userstable.id'),nullable=False)
 
 class Users(Base):
     __tablename__ = 'userstable'
