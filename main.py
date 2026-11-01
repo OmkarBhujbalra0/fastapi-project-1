@@ -6,9 +6,11 @@ from database import get_db,engine,Base
 import models
 from models import ItemDB,Users
 from security import hashed_password,verify_password,create_token
-
-app = FastAPI()
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Literal
+import jwt
+from security import SECRET_KEY
+app = FastAPI()
 
 Base.metadata.create_all(bind=engine)
 
@@ -19,9 +21,27 @@ class Lost_Found(BaseModel):
     date_reported: datetime = Field(default_factory=datetime.now)
     status: Literal["lost","found"]
 
+bearer_scheme = HTTPBearer()
+
 class User(BaseModel):
     username: str
     password: str
+
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),db: Session = Depends(get_db)):
+    try:
+        payload = jwt.decode(credentials.credentials,SECRET_KEY,algorithms=["HS256"])
+        username = payload.get('sub')
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401,detail="Invalid Token")
+    user = db.query(Users).filter(Users.username == username).first()
+    if not user:
+        raise HTTPException(status_code=401,detail="Invalid Token")
+    return user
+
+@app.get('/profile')
+def homepage(current_user: User = Depends(get_current_user)):
+    return {"message":f"Welcome {current_user.username}"}
+
 
 @app.get('/')
 def home():
