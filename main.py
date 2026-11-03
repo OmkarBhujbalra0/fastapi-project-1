@@ -10,6 +10,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Literal
 import jwt
 from security import SECRET_KEY
+
 app = FastAPI()
 
 Base.metadata.create_all(bind=engine)
