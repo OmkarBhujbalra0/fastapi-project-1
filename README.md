@@ -39,11 +39,10 @@ pip install -r requirements.txt
 ```
 4. Make an `.env` file and write all the confidential details like API_KEY or DATABASE_URL in it.
 
-5. This project uses a SECRET_KEY so generate a secret key from this code in Python Shell line by line.
+5. This project uses a SECRET_KEY so generate a secret key from this code.
 
 ```
-python -c "import secrets"
-print(secrets.token_hex(32))
+python -c "import secrets; print(secrets.token_hex(32))"
 ```
 
 6. Paste the generated secret key in the `.env` file. 

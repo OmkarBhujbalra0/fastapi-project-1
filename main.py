@@ -1,6 +1,6 @@
 from fastapi import FastAPI,HTTPException,Depends
 from datetime import datetime
-from pydantic import BaseModel,Field
+from pydantic import BaseModel,Field,ConfigDict
 from sqlalchemy.orm import Session
 from database import get_db,engine,Base
 import models
@@ -13,6 +13,15 @@ from security import SECRET_KEY
 app = FastAPI()
 
 Base.metadata.create_all(bind=engine)
+
+class Item_Out(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    item_name: str
+    location: str
+    date_lost_or_found: datetime
+    date_reported: datetime
+    status: Literal["lost","found"]
 
 class Lost_Found(BaseModel):
     item_name: str
@@ -42,7 +51,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(bearer_
 def homepage(current_user: User = Depends(get_current_user)):
     return {"message":f"Welcome {current_user.username}"}
 
-@app.get('/me/items')
+@app.get('/me/items',response_model=list[Item_Out])
 def my_items(current_user: User = Depends(get_current_user),db: Session = Depends(get_db)):
     items = db.query(ItemDB).filter(ItemDB.owner_id == current_user.id).all()
     return items
@@ -53,12 +62,12 @@ def home():
 
 lost_and_found_list = []
 
-@app.get('/items')
+@app.get('/items',response_model=list[Item_Out])
 def display(db:Session = Depends(get_db)):
     item_data = db.query(ItemDB).all()
     return item_data
 
-@app.get('/items/{item_name}')
+@app.get('/items/{item_name}',response_model=Item_Out)
 def search(item_name:str,db:Session = Depends(get_db)):
     item_data = db.query(ItemDB).filter(ItemDB.item_name == item_name).first()
     if not item_data:
